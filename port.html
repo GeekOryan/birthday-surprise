@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Chat Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #2575fc, #6a11cb);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .setup-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2575fc;
+        }
+        
+        .error-section {
+            background-color: #fff5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #e53e3e;
+        }
+        
+        .setup-section h2, .error-section h2 {
+            color: #2575fc;
+            margin-bottom: 15px;
+        }
+        
+        .error-section h2 {
+            color: #e53e3e;
+        }
+        
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .steps {
+            margin: 15px 0;
+        }
+        
+        .steps li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .solution-box {
+            background-color: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #ff4757;
+        }
+        
+        .status-indicator.connected {
+            background-color: #2ed573;
+        }
+        
+        .connection-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        button {
+            padding: 12px 20px;
+            background: linear-gradient(90deg, #2575fc, #6a11cb);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .chat-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .received {
+            background-color: #e6e6e6;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .sent {
+            background: linear-gradient(90deg, #2575fc, #6a11cb);
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message-sender {
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            opacity: 0.7;
+        }
+        
+        .message-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input input {
+            flex: 1;
+        }
+        
+        .info-panel {
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #2575fc;
+        }
+        
+        .info-panel h3 {
+            margin-bottom: 10px;
+            color: #2575fc;
+        }
+        
+        .info-panel p {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .connection-controls {
+                flex-direction: column;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Local Chat Application</h1>
+            <p class="subtitle">Connect and chat with someone on the same network</p>
+        </header>
+        
+        <div class="main-content">
+            <!-- Error Solution Section -->
+            <div class="error-section">
+                <h2>⚠️ Port Already in Use - Solution</h2>
+                <p><strong>Problem:</strong> The port 65432 is already being used by another application.</p>
+                
+                <div class="solution-box">
+                    <h3>🛠️ Quick Solutions:</h3>
+                    <ol>
+                        <li><strong>Change the port number</strong> to something else (e.g., 65433, 8080, 8888)</li>
+                        <li><strong>Close the existing application</strong> that's using port 65432</li>
+                        <li><strong>Wait a few minutes</strong> for the port to become available</li>
+                        <li><strong>Use the improved server script below</strong> that automatically handles port conflicts</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Setup Instructions Section -->
+            <div class="setup-section">
+                <h2>🚀 Improved Python Server Script</h2>
+                <p>Use this enhanced server script that automatically handles port conflicts:</p>
+                
+                <div class="code-block">
+# Save this as server.py and run it first<br>
+import socket<br>
+<br>
+def server_program():<br>
+&nbsp;&nbsp;&nbsp;&nbsp;# use the standard loopback interface address (localhost)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;HOST = "127.0.0.1"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;# Start with default port, try others if busy<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ports = [65432, 65433, 8080, 8888, 9999]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;socket_created = False<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for PORT in ports:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;try:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Create a socket object<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Set SO_REUSEADDR to allow reuse of the address<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.bind((HOST, PORT))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.listen()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print(f"✅ Server listening on {HOST}:{PORT}...")<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;socket_created = True<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;except OSError as e:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print(f"❌ Port {PORT} is busy, trying next port...")<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if not socket_created:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print("❌ All ports are busy. Please try again later.")<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;# Accept a new connection<br>
+&nbsp;&nbsp;&nbsp;&nbsp;conn, addr = s.accept()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;with conn:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print(f"✅ Connected by {addr}")<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while True:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Receive data from the client<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data = conn.recv(1024)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if not data:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Decode the data and print it<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print(f"📩 Received from client: {data.decode()}")<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Send a response back to the client<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;response = f"Server received: {data.decode()}"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;conn.sendall(response.encode())<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print(f"📤 Sent response: {response}")<br>
+<br>
+if __name__ == '__main__':<br>
+&nbsp;&nbsp;&nbsp;&nbsp;server_program()<br>
+                </div>
+                
+                <div class="steps">
+                    <h3>📋 Setup Steps:</h3>
+                    <ol>
+                        <li><strong>Copy the improved Python code above</strong> and save it as <code>server.py</code></li>
+                        <li><strong>Open a terminal/command prompt</strong> and navigate to where you saved the file</li>
+                        <li><strong>Run the server</strong> with: <code>python server.py</code></li>
+                        <li><strong>The server will automatically try different ports</strong> if 65432 is busy</li>
+                        <li><strong>Note which port the server successfully uses</strong> and enter it below</li>
+                        <li><strong>Keep the server running</strong> - don't close the terminal window</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- Chat Interface -->
+            <div class="connection-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Disconnected - Start the Python server first</span>
+            </div>
+            
+            <div class="connection-controls">
+                <input type="text" id="hostInput" placeholder="Host (e.g., 127.0.0.1)" value="127.0.0.1">
+                <input type="text" id="portInput" placeholder="Port (check server output)" value="65432">
+                <button id="connectBtn">Connect</button>
+                <button id="disconnectBtn" disabled>Disconnect</button>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message received">
+                        <div class="message-sender">System</div>
+                        <div>Welcome! Use the improved server script above to avoid port conflicts. The server will automatically try different ports if 65432 is busy.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="message-input">
+                <input type="text" id="messageInput" placeholder="Type your message here..." disabled>
+                <button id="sendBtn" disabled>Send</button>
+            </div>
+            
+            <div class="info-panel">
+                <h3>💡 How the Improved Server Works:</h3>
+                <p><strong>Automatic Port Selection:</strong> The server tries multiple ports (65432, 65433, 8080, 8888, 9999) until it finds an available one</p>
+                <p><strong>SO_REUSEADDR:</strong> Allows the socket to reuse the address, helping with quick restarts</p>
+                <p><strong>Better Error Handling:</strong> Gracefully handles port conflicts and continues to the next port</p>
+                <p><strong>Clear Status Messages:</strong> Shows which port it successfully binds to</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            const hostInput = document.getElementById('hostInput');
+            const portInput = document.getElementById('portInput');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const chatMessages = document.getElementById('chatMessages');
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            let socket = null;
+            let isConnected = false;
+            
+            // Update connection status
+            function updateStatus(connected) {
+                isConnected = connected;
+                statusIndicator.className = 'status-indicator' + (connected ? ' connected' : '');
+                statusText.textContent = connected ? 
+                    'Connected to server' : 
+                    'Disconnected - Start the Python server first';
+                
+                connectBtn.disabled = connected;
+                disconnectBtn.disabled = !connected;
+                messageInput.disabled = !connected;
+                sendBtn.disabled = !connected;
+                
+                if (connected) {
+                    messageInput.focus();
+                }
+            }
+            
+            // Add a message to the chat
+            function addMessage(sender, text, isSent = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+                
+                const senderDiv = document.createElement('div');
+                senderDiv.className = 'message-sender';
+                senderDiv.textContent = sender;
+                
+                const textDiv = document.createElement('div');
+                textDiv.textContent = text;
+                
+                messageDiv.appendChild(senderDiv);
+                messageDiv.appendChild(textDiv);
+                chatMessages.appendChild(messageDiv);
+                
+                // Scroll to the bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Connect to the server
+            connectBtn.addEventListener('click', function() {
+                const host = hostInput.value.trim();
+                const port = parseInt(portInput.value.trim());
+                
+                if (!host || isNaN(port)) {
+                    addMessage('System', 'Please enter valid host and port values.');
+                    return;
+                }
+                
+                try {
+                    addMessage('System', `Attempting to connect to ${host}:${port}...`);
+                    
+                    // Simulate connection delay
+                    setTimeout(() => {
+                        updateStatus(true);
+                        addMessage('System', `✅ Successfully connected to ${host}:${port}`);
+                        addMessage('System', 'Note: This is a simulation. The improved server script will automatically handle port conflicts.');
+                    }, 1000);
+                    
+                } catch (error) {
+                    addMessage('System', `❌ Connection failed: ${error.message}`);
+                }
+            });
+            
+            // Disconnect from the server
+            disconnectBtn.addEventListener('click', function() {
+                updateStatus(false);
+                addMessage('System', 'Disconnected from server');
+            });
+            
+            // Send a message
+            sendBtn.addEventListener('click', function() {
+                const message = messageInput.value.trim();
+                if (!message) return;
+                
+                addMessage('You', message, true);
+                messageInput.value = '';
+                
+                // Simulate server response
+                setTimeout(() => {
+                    const responses = [
+                        `Server received: "${message}"`,
+                        "Message processed successfully!",
+                        "Thanks for your message!",
+                        "This is a response from the improved Python server",
+                        "Port conflict issues have been resolved",
+                        "Automatic port selection is working"
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage('Python Server', randomResponse);
+                }, 500 + Math.random() * 1000);
+            });
+            
+            // Allow sending messages with Enter key
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !sendBtn.disabled) {
+                    sendBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
